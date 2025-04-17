@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     const result = await query('SELECT * FROM todos WHERE id = $1', [id]);
 
     if (result.rows.length === 0) {
@@ -17,7 +17,8 @@ export async function GET(
     }
 
     return NextResponse.json(result.rows[0]);
-  } catch {
+  } catch (error) {
+    console.error('Error fetching todo:', error);
     return NextResponse.json(
       { error: 'Failed to fetch todo' },
       { status: 500 }
@@ -27,10 +28,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     const { title, description, completed } = await request.json();
 
     const result = await query(
@@ -39,7 +40,8 @@ export async function PUT(
     );
 
     return NextResponse.json(result.rows[0]);
-  } catch {
+  } catch (error) {
+    console.error('Error updating todo:', error);
     return NextResponse.json(
       { error: 'Failed to update todo' },
       { status: 500 }
@@ -49,13 +51,14 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     await query('DELETE FROM todos WHERE id = $1', [id]);
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Error deleting todo:', error);
     return NextResponse.json(
       { error: 'Failed to delete todo' },
       { status: 500 }
