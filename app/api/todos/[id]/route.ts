@@ -3,10 +3,11 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const result = await query('SELECT * FROM todos WHERE id = $1', [params.id]);
+    const { id } = context.params;
+    const result = await query('SELECT * FROM todos WHERE id = $1', [id]);
 
     if (result.rows.length === 0) {
       return NextResponse.json(
@@ -26,14 +27,15 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params;
     const { title, description, completed } = await request.json();
 
     const result = await query(
       'UPDATE todos SET title = $1, description = $2, completed = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *',
-      [title, description, completed, params.id]
+      [title, description, completed, id]
     );
 
     return NextResponse.json(result.rows[0]);
@@ -47,10 +49,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    await query('DELETE FROM todos WHERE id = $1', [params.id]);
+    const { id } = context.params;
+    await query('DELETE FROM todos WHERE id = $1', [id]);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(
